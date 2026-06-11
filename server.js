@@ -8,12 +8,33 @@ const fileRouter = require("./routes/fileRouter");
 const adminRouter = require("./routes/adminRouter");
 
 const superAdminRoutes = require("./routes/superadminRouter");
+const User = require("./models/userModel");
+const bcrypt = require("bcryptjs");
+
 
 
 const app = express();
 
-connectDb();
+const seedSuperAdmin = async () => {
+    try {
+        const superAdminExists = await User.findOne({ role: "superadmin" });
+        if (!superAdminExists) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash("admin123", salt);
+            await User.create({
+                name: "Super Admin",
+                email: "superadmin@admin.com",
+                password: hashedPassword,
+                role: "superadmin",
+            });
+            console.log("Super Admin seeded successfully.");
+        }
+    } catch (error) {
+        console.error("Error seeding Super Admin:", error);
+    }
+};
 
+connectDb().then(seedSuperAdmin);
 app.use(express.json());
 app.use(cors());
 
