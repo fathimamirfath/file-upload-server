@@ -48,6 +48,12 @@ app.use("/api/admin", adminRouter);
 app.use("/api/superadmin", superAdminRoutes);
 const PORT = process.env.PORT || 5000;
 
+// Global Error Handler for Multer and other uncaught errors
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler:", err);
+  res.status(500).json({ message: "Server Error", error: err.message || "Unknown error occurred" });
+});
+
 app.listen(PORT, () => {
   console.log(`Server Running on port ${PORT}`);
 });

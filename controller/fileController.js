@@ -11,8 +11,13 @@ const uploadFile = async (req, res) => {
             return res.status(400).json({ message: "No file uploaded" });
         }
         
-        const fileUrl = req.file.path;
-        const publicId = req.file.filename;
+        // If uploaded to Cloudinary, path starts with http. Otherwise, construct local URL.
+        const isCloudinary = req.file.path && req.file.path.startsWith("http");
+        const fileUrl = isCloudinary 
+            ? req.file.path 
+            : `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+            
+        const publicId = isCloudinary ? req.file.filename : null;
         
         // Find user to update storage (optional, but good practice)
         const user = await User.findById(req.id);
@@ -37,7 +42,7 @@ const uploadFile = async (req, res) => {
         res.status(201).json(newFile);
     } catch (error) {
         console.error("Error uploading file:", error);
-        res.status(500).json({ message: "Server Error" });
+        res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
 
